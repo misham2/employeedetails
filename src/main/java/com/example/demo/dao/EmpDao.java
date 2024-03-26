@@ -5,6 +5,7 @@ import com.example.demo.repository.EmpRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -20,5 +21,10 @@ public class EmpDao
             return opEmployee.get();
         }
         return null;
+    }
+
+    public List<Emp> getAllEmp()
+    {
+        return repo.findAll();
     }
 }

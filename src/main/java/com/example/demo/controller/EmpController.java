@@ -14,7 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
+import java.util.List;
 
 
 @RequestMapping("/Emp")
@@ -24,44 +24,55 @@ public class EmpController {
     EmpRepository repo;
     @Autowired
     employee_activityRepository repo1;
-
     @Autowired
     activityRepository repo3;
+
     @Autowired
     EmpDao dao;
-
     @Autowired
     employee_activityDao edao;
-
     @Autowired
     activityDao adao;
 
 
     @PostMapping("/Employee")
-    public ResponseEntity<Emp> saveEmp(@RequestBody Emp emp)
-    {
+    public ResponseEntity<Emp> saveEmp(@RequestBody Emp emp) {
         repo.save(emp);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(emp);
     }
 
     @PostMapping("/employee_activity")
-    public ResponseEntity<employee_activity> saveEmployee_activity(@RequestBody employee_activity emp_activity)
-    {
+    public ResponseEntity<employee_activity> saveEmployee_activity(@RequestBody employee_activity emp_activity,
+                                                                   @RequestParam String type) {
+        if (type.equals("login")) {
             repo1.save(emp_activity);
-
             return ResponseEntity.status(HttpStatus.CREATED).body(emp_activity);
-    }
-    @PostMapping("/activity")
-    public ResponseEntity<activity> saveactivity(@RequestBody activity Activity)
-    {
-        repo3.save(Activity);
 
+        } else if (type.equalsIgnoreCase("logout")) {
+            repo1.save(emp_activity);
+            return ResponseEntity.status(HttpStatus.CREATED).body(emp_activity);
+        } else if (type.equalsIgnoreCase("permission")) {
+            repo1.save(emp_activity);
+            return ResponseEntity.status(HttpStatus.CREATED).body(emp_activity);
+        } else if (type.equalsIgnoreCase("Leave")) {
+            repo1.save(emp_activity);
+            return ResponseEntity.status(HttpStatus.CREATED).body(emp_activity);
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(emp_activity);
+        }
+
+
+    }
+
+    @PostMapping("/activity")
+    public ResponseEntity<activity> saveactivity(@RequestBody activity Activity) {
+        repo3.save(Activity);
         return ResponseEntity.status(HttpStatus.CREATED).body(Activity);
     }
 
     @PostMapping("/assignEmp")
-    public ResponseEntity<employee_activity> assignEmpToEmpActivity(@RequestParam int employeeActivityId,@RequestParam int employeeId) {
+    public ResponseEntity<employee_activity> assignEmpToEmpActivity(@RequestParam int employeeActivityId, @RequestParam int employeeId) {
         Emp employee = dao.findEmpById(employeeId);
         employee_activity employeeActivity = edao.findEmpActivityById(employeeActivityId);
         if (employee != null) {
@@ -76,7 +87,7 @@ public class EmpController {
     }
 
     @PostMapping("/assignActivity")
-    public ResponseEntity<employee_activity> assignActivityTOEmpActivity(@RequestParam int employeeActivityId,@RequestParam int activityId) {
+    public ResponseEntity<employee_activity> assignActivityTOEmpActivity(@RequestParam int employeeActivityId, @RequestParam int activityId) {
         activity activity = adao.findActivityById(activityId);
         employee_activity employeeActivity = edao.findEmpActivityById(employeeActivityId);
         if (activity != null) {
@@ -90,19 +101,35 @@ public class EmpController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(employeeActivity);
     }
 
-    @GetMapping
-    public ResponseEntity<employee_activity> getEmployeeActivity(@RequestParam int employeeActivityId)
-    {
+    @GetMapping("/EmployeeActivity")
+    public ResponseEntity<employee_activity> getEmployeeActivity(@RequestParam int employeeActivityId) {
         employee_activity employeeActivity = edao.findEmpActivityById(employeeActivityId);
-        if(employeeActivity != null)
-        {
+        if (employeeActivity != null) {
             return ResponseEntity.status(HttpStatus.FOUND).body(employeeActivity);
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(employeeActivity);
     }
 
+    @GetMapping("/AllEmployeeDetails")
+    public ResponseEntity<employee_activity> getAllEmp(@RequestParam String name) {
+        List<Emp> employees = dao.getAllEmp();
+        List<employee_activity> employeeActivities = repo1.findAll();
+        for (Emp employee : employees) {
+            if (employee.getName().equals(name)) {
+                for (employee_activity employeeActivity : employeeActivities) {
+                    if (employeeActivity.getEmployee().getName().equals(employee.getName())) {
+                        return ResponseEntity.status(HttpStatus.FOUND).body(employeeActivity);
+                    }
+                }
 
+            }
+        }
+        return null;
+    }
 
-
-
+    @GetMapping("/AllwithActivities")
+    public ResponseEntity<List<Emp>> getAllEmp() {
+        List<Emp> employees = dao.getAllEmp();
+        return ResponseEntity.ok(employees);
+    }
 }
